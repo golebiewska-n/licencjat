@@ -1,10 +1,10 @@
 <?php
 
 function db_connect() {
-  $host = 'localhost';
-  $login = 'root';
-  $password = 'root';
-  $db = 'php-messages';
+  $host = '';
+  $login = '';
+  $password = '';
+  $db = '';
 
   $connection = new mysqli($host, $login, $password, $db);
   
