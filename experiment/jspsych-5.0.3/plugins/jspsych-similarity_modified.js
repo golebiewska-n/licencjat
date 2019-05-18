@@ -78,6 +78,7 @@ jsPsych.plugins.similarity = (function() {
       }
       else if(trial.phase == 2){
         showCommunicationWithPeer(display_element, trial)
+        console.log(trial.coefficient);
       }
     }
 
@@ -123,7 +124,6 @@ jsPsych.plugins.similarity = (function() {
           // goto next trial in block
           display_element.html('');
 
-          // send message and read from and to peer, wyswietlanie 2 suwaków, zadaje pytanie, przyjęcie odpowiedzi
           jsPsych.finishTrial(trial_data);
         });
     }
@@ -246,7 +246,6 @@ jsPsych.plugins.similarity = (function() {
         // goto next trial in block
         display_element.html('');
 
-        // send message and read from and to peer, wyswietlanie 2 suwaków, zadaje pytanie, przyjęcie odpowiedzi
         jsPsych.finishTrial(trial_data);
       });
     }
