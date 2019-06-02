@@ -73,59 +73,9 @@ jsPsych.plugins.similarity = (function() {
     }
 
     function showAnswerScreen(){
-      if (trial.show_response == "POST_STIMULUS" && trial.phase == 1) {
+      if (trial.show_response == "POST_STIMULUS") {
         show_response_slider(display_element, trial);
       }
-      else if(trial.phase == 2){
-        showCommunicationWithPeer(display_element, trial)
-        console.log(trial.coefficient);
-      }
-    }
-
-    function showCommunicationWithPeer(display_element, trial){
-        var startTime = (new Date()).getTime();
-
-        display_element.css("text-align", "center");
-
-        // create select
-        display_element.append($('<p>Czy widzi Pan/Pani tę samą liczbkę kropek, co Pana/Pani partner?</p>', ));
-        display_element.append($('<input type="radio" name="answer" value="yes">', ));
-        display_element.append($('<span style="margin-right:50px">Tak</span>',));
-        display_element.append($('<input type="radio" name="answer" value="no">', ));
-        display_element.append($('<span>Nie</span><br>', ));
-
-        //  create button
-        display_element.append($('<button>', {
-          'id': 'next',
-          'class': 'sim',
-          'html': 'Dodaj odpowiedź',
-          'css':{
-            'float': 'middle',
-            'margin': '10px'
-          }
-        }));
-
-        // finish trial
-        $("#next").click(function() {
-          var endTime = (new Date()).getTime();
-          var response_time = endTime - startTime;
-
-          // kill any remaining setTimeout handlers
-          for (var i = 0; i < setTimeoutHandlers.length; i++) {
-            clearTimeout(setTimeoutHandlers[i]);
-          }
-
-          var score = $("input[name='answer']:checked").val();
-          var trial_data = {
-            "sim_score": score,
-            "rt": response_time,
-            "stimulus": trial.stimuli[0]
-          };
-          // goto next trial in block
-          display_element.html('');
-
-          jsPsych.finishTrial(trial_data);
-        });
     }
 
     function show_response_slider(display_element, trial) {
@@ -228,27 +178,123 @@ jsPsych.plugins.similarity = (function() {
         display_element.append(trial.prompt);
       }
 
+
       $("#next").click(function() {
-        var endTime = (new Date()).getTime();
-        var response_time = endTime - startTime;
 
-        // kill any remaining setTimeout handlers
-        for (var i = 0; i < setTimeoutHandlers.length; i++) {
-          clearTimeout(setTimeoutHandlers[i]);
-        }
+          var endTime = (new Date()).getTime();
+          var response_time = endTime - startTime;
 
-        var score = $("#slider").slider("value");
-        var trial_data = {
-          "sim_score": score,
-          "rt": response_time,
-          "stimulus": trial.stimuli[0]
-        };
-        // goto next trial in block
-        display_element.html('');
+          // kill any remaining setTimeout handlers
+          for (var i = 0; i < setTimeoutHandlers.length; i++) {
+            clearTimeout(setTimeoutHandlers[i]);
+          }
 
-        jsPsych.finishTrial(trial_data);
-      });
+          var score = $("#slider").slider("value");
+          var trial_data = {
+            "sim_score": score,
+            "rt": response_time,
+            "stimulus": trial.stimuli[0]
+          };
+
+          // goto next trial in block
+          display_element.html('');
+
+          if(trial.phase == 2){
+            var startTime_answer = (new Date()).getTime();
+
+            display_element.css("text-align", "center");
+
+            //show partner's answers
+            display_element.append($('<p id="messages">Oczekiwanie na odpowiedź partnera.</p>'));
+            display_element.append($('<p id="slider-position"></p>'));
+            client.send_message(peer_id, "RESPONSE", score);
+          	client.read_message("RESPONSE", function(msg) {
+              $('#messages').html('Odpowiedź partnera: <br>');
+
+
+              $('#messages').append($('<img>', {
+                'src': 'experiment/img/dots/dots_007.png',
+                'css': {
+                  'width': '150px',
+                  'border-style': 'solid',
+                  'display': 'inline-block',
+                  'vertical-align': 'middle'
+                }
+              }));
+
+              $('#messages').append($('<div>', {
+                'id': 'slider-position',
+                'class': 'sim',
+                'css': {
+                  'width': '400px',
+                  'display': 'inline-block',
+                  'vertical-align': 'middle'
+                }
+              }));
+
+              $('#messages').append($('<img>', {
+                'src': 'experiment/img/dots/dots_200.png',
+                'css': {
+                  'width': '150px',
+                  'border-style': 'solid',
+                  'display': 'inline-block',
+                  'vertical-align': 'middle'
+                }
+              }));
+              $('#slider-position').slider({
+                value: msg['content'],
+                min: 1,
+                max: trial.intervals,
+                step: 0.01,
+              }).slider('disable');
+            }, null, null);
+
+            // create select
+            display_element.append($('<p>Czy widzi Pan/Pani tę samą liczbkę kropek, co Pana/Pani partner?</p>', ));
+            display_element.append($('<input type="radio" name="answer" value="yes">', ));
+            display_element.append($('<span style="margin-right:50px">Tak</span>',));
+            display_element.append($('<input type="radio" name="answer" value="no">', ));
+            display_element.append($('<span>Nie</span><br>', ));
+
+            //  create button
+            display_element.append($('<button>', {
+              'id': 'next',
+              'class': 'sim',
+              'html': 'Dodaj odpowiedź',
+              'css':{
+                'float': 'middle',
+                'margin': '10px'
+              }
+            }));
+
+            // finish trial
+            $("#next").click(function() {
+              var endTime_answer = (new Date()).getTime();
+              var response_time_answer = endTime_answer - startTime_answer;
+
+              // kill any remaining setTimeout handlers
+              for (var i = 0; i < setTimeoutHandlers.length; i++) {
+                clearTimeout(setTimeoutHandlers[i]);
+              }
+
+              var answer = $("input[name='answer']:checked").val();
+              trial_data.answer = answer;
+              trial_data.rt_answer = response_time_answer;
+
+              // goto next trial in block
+              display_element.html('');
+
+              jsPsych.finishTrial(trial_data);
+            });
+          }
+          else{
+            jsPsych.finishTrial(trial_data);
+          }
+
+        });
+      }
+
+
     }
-  };
   return plugin;
 })();

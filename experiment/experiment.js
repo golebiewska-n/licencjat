@@ -157,14 +157,11 @@ var thankyou = {
 
 function pass_messages(msg) {
 
-	// $("#messages").html("<input type=\"text\" name=\"name\" id=\"text_input\" /><button id=\"confirm_button\">Send</button>");
-	// $("#confirm_button").click(function() {
-	// 	client.send_message(peer_id, "RESPONSE", $("#text_input").val());
-	// 	$("#messages").html("Value send");
-	// });
-	//
-	// client.read_message("RESPONSE", function(msg) { alert(msg["content"]) }, null, null);
 	$('#messages').html('');
+	$('.jspsych-display-element').remove();
+
+	
+
 	jsPsych.init({
 		timeline: timeline_phase2,
 
